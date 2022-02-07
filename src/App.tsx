@@ -2,6 +2,7 @@ import React from "react";
 import "./App.css";
 import Router from "./router";
 import { createGlobalStyle } from "styled-components";
+import { ReactQueryDevtools } from "react-query/devtools";
 
 const GlobalStyle = createGlobalStyle`
 @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@200;300&display=swap');
@@ -71,6 +72,7 @@ function App() {
     <>
       <Router />
       <GlobalStyle />
+      <ReactQueryDevtools initialIsOpen={true} />
     </>
   );
 }

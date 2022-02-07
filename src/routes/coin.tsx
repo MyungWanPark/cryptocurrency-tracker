@@ -8,8 +8,11 @@ import {
   Link,
 } from "react-router-dom";
 import styled from "styled-components";
+import { useQuery } from "react-query";
+
 import Chart from "./chart";
 import Price from "./price";
+import { fetchGeneralInfo, fetchPriceInfo } from "../api";
 
 const Title = styled.h1`
   font-size: 48px;
@@ -29,7 +32,6 @@ const Container = styled.div`
 
 const Header = styled.header`
   height: 15vh;
-  font-size: 30px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -189,36 +191,28 @@ interface Whitepaper {
 
 const Coin = () => {
   const { coinId } = useParams();
-  const [isLoading, setisLoading] = useState(true);
-  const [generalInfo, setGeneralInfo] = useState<IGeneralInfo>();
-  const [priceInfo, setPriceInfo] = useState<IPriceInfo>();
   const priceMatch = useMatch("/:coinId/price");
   const chartMatch = useMatch("/:coinId/chart");
+  const { isLoading: generalIsLoading, data: generalData } =
+    useQuery<IGeneralInfo>(["general", coinId], () => fetchGeneralInfo(coinId));
+  const { isLoading: priceIsLoading, data: priceData } = useQuery<IPriceInfo>(
+    ["price", coinId],
+    () => fetchPriceInfo(coinId)
+  );
 
   const state = useLocation().state as StateInterface;
-
-  useEffect(() => {
-    (async () => {
-      const generalInfo = await (
-        await fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)
-      ).json();
-      const priceInfo = await (
-        await fetch(`https://api.coinpaprika.com/v1/tickers/${coinId}`)
-      ).json();
-      setGeneralInfo(generalInfo);
-      setPriceInfo(priceInfo);
-      setisLoading(false);
-    })();
-  }, [coinId]);
+  const isLoading = generalIsLoading || priceIsLoading;
 
   return (
     <Container>
       <Header>
-        {state?.name
-          ? state.name
-          : isLoading
-          ? "Loading..."
-          : generalInfo?.name}
+        <Title>
+          {state?.name
+            ? state.name
+            : isLoading
+            ? "Loading..."
+            : generalData?.name}
+        </Title>
       </Header>
       {isLoading ? (
         <Loader>Loading...</Loader>
@@ -227,26 +221,26 @@ const Coin = () => {
           <Overview>
             <OverviewItem>
               <span>Rank:</span>
-              <span>{generalInfo?.rank}</span>
+              <span>{generalData?.rank}</span>
             </OverviewItem>
             <OverviewItem>
               <span>Symbol:</span>
-              <span>${generalInfo?.symbol}</span>
+              <span>${generalData?.symbol}</span>
             </OverviewItem>
             <OverviewItem>
               <span>Open Source:</span>
-              <span>{generalInfo?.open_source ? "Yes" : "No"}</span>
+              <span>{generalData?.open_source ? "Yes" : "No"}</span>
             </OverviewItem>
           </Overview>
-          <Description>{generalInfo?.description}</Description>
+          <Description>{generalData?.description}</Description>
           <Overview>
             <OverviewItem>
               <span>Total Suply:</span>
-              <span>{priceInfo?.total_supply}</span>
+              <span>{priceData?.total_supply}</span>
             </OverviewItem>
             <OverviewItem>
               <span>Max Supply:</span>
-              <span>{priceInfo?.max_supply}</span>
+              <span>{priceData?.max_supply}</span>
             </OverviewItem>
           </Overview>
 
