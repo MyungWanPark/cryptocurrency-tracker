@@ -21,11 +21,16 @@ interface IHistoricalData {
 const Chart = ({ coinId }: ICoin) => {
   const { isLoading, data } = useQuery<IHistoricalData[]>(
     ["ohlcv", coinId],
-    () => fetchCoinHistory(coinId)
+    () => fetchCoinHistory(coinId),
+    {
+      refetchInterval: 10000,
+    }
   );
   return (
-    <>
-      {
+    <div>
+      {isLoading ? (
+        "Chart is loading"
+      ) : (
         <ApexChart
           options={{
             theme: {
@@ -53,6 +58,18 @@ const Chart = ({ coinId }: ICoin) => {
               axisBorder: { show: false },
               axisTicks: { show: false },
               labels: { show: false },
+              type: "datetime",
+              categories: data?.map((price) => price.time_close),
+            },
+            fill: {
+              type: "gradient",
+              gradient: { gradientToColors: ["#0be881"], stops: [0, 100] },
+            },
+            colors: ["#0fbcf9"],
+            tooltip: {
+              y: {
+                formatter: (value) => `$${value.toFixed(5)}`,
+              },
             },
           }}
           series={[
@@ -63,8 +80,8 @@ const Chart = ({ coinId }: ICoin) => {
           ]}
           type="line"
         />
-      }
-    </>
+      )}
+    </div>
   );
 };
 

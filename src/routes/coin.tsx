@@ -9,6 +9,7 @@ import {
 } from "react-router-dom";
 import styled from "styled-components";
 import { useQuery } from "react-query";
+import { Helmet } from "react-helmet";
 
 import Chart from "./chart";
 import Price from "./price";
@@ -197,7 +198,10 @@ const Coin = () => {
     useQuery<IGeneralInfo>(["general", coinId], () => fetchGeneralInfo(coinId));
   const { isLoading: priceIsLoading, data: priceData } = useQuery<IPriceInfo>(
     ["price", coinId],
-    () => fetchPriceInfo(coinId)
+    () => fetchPriceInfo(coinId),
+    {
+      refetchInterval: 5000,
+    }
   );
 
   const state = useLocation().state as StateInterface;
@@ -205,6 +209,16 @@ const Coin = () => {
 
   return (
     <Container>
+      <Helmet>
+        <title>
+          {state?.name
+            ? state.name
+            : isLoading
+            ? "Loading..."
+            : generalData?.name}
+        </title>
+      </Helmet>
+
       <Header>
         <Title>
           {state?.name
@@ -228,8 +242,8 @@ const Coin = () => {
               <span>${generalData?.symbol}</span>
             </OverviewItem>
             <OverviewItem>
-              <span>Open Source:</span>
-              <span>{generalData?.open_source ? "Yes" : "No"}</span>
+              <span>Price:</span>
+              <span>${priceData?.quotes.USD.price.toFixed(3)}</span>
             </OverviewItem>
           </Overview>
           <Description>{generalData?.description}</Description>
